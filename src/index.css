@@ -2,41 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Gamified Mobile App Design System - Poppins + Brand Colors */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    /* Brand Colors */
+    --brand-primary: 347 86% 39%; /* #a42138 */
+    --brand-primary-light: 347 86% 65%;
+    --brand-primary-dark: 347 86% 25%;
+    
+    /* Game Colors */
+    --game-gold: 45 100% 60%;
+    --game-silver: 210 8% 75%;
+    --game-bronze: 25 85% 60%;
+    --game-success: 142 76% 36%;
+    --game-warning: 38 92% 50%;
+    --game-danger: 0 84% 60%;
+    
+    /* Background & Surface */
+    --background: 220 14% 96%;
+    --background-secondary: 220 14% 92%;
+    --surface: 0 0% 100%;
+    --surface-elevated: 0 0% 100%;
+    
+    /* Text Colors */
+    --foreground: 220 9% 15%;
+    --foreground-muted: 220 9% 46%;
+    --foreground-subtle: 220 9% 65%;
+    
+    /* Component Colors */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
+    --card-foreground: 220 9% 15%;
+    
+    --primary: 347 86% 39%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 220 9% 15%;
+    
+    --accent: 45 100% 60%;
+    --accent-foreground: 220 9% 15%;
+    
+    --muted: 220 14% 92%;
+    --muted-foreground: 220 9% 46%;
+    
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
+    --ring: 347 86% 39%;
+    
+    /* Game Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--brand-primary)), hsl(var(--brand-primary-light)));
+    --gradient-gold: linear-gradient(135deg, hsl(var(--game-gold)), hsl(45 100% 70%));
+    --gradient-silver: linear-gradient(135deg, hsl(var(--game-silver)), hsl(210 8% 85%));
+    --gradient-success: linear-gradient(135deg, hsl(var(--game-success)), hsl(142 76% 46%));
+    
+    /* Shadows */
+    --shadow-game: 0 8px 24px hsl(var(--brand-primary) / 0.15);
+    --shadow-elevated: 0 4px 12px hsl(220 9% 15% / 0.1);
+    --shadow-soft: 0 2px 8px hsl(220 9% 15% / 0.05);
+    
+    /* Animations */
+    --animation-bounce: bounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --animation-spin: spin 2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    --animation-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    
+    --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +130,94 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-light;
+    font-family: 'Poppins', system-ui, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', system-ui, sans-serif;
+    @apply font-semibold;
+  }
+  
+  .font-game {
+    font-family: 'Poppins', system-ui, sans-serif;
+    @apply font-medium;
+  }
+}
+
+@layer components {
+  /* Game Button Variants */
+  .btn-game-primary {
+    @apply bg-gradient-to-r from-primary to-brand-primary-light text-primary-foreground;
+    @apply shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200;
+    @apply font-medium text-lg py-4 px-6 rounded-2xl;
+  }
+  
+  .btn-game-gold {
+    background: var(--gradient-gold);
+    @apply text-accent-foreground shadow-lg hover:shadow-xl;
+    @apply transform hover:scale-105 transition-all duration-200;
+    @apply font-medium text-lg py-4 px-6 rounded-2xl;
+  }
+  
+  .btn-game-success {
+    background: var(--gradient-success);
+    @apply text-white shadow-lg hover:shadow-xl;
+    @apply transform hover:scale-105 transition-all duration-200;
+    @apply font-medium text-lg py-4 px-6 rounded-2xl;
+  }
+  
+  /* Game Card Styles */
+  .game-card {
+    @apply bg-surface rounded-3xl p-6 shadow-soft border border-border;
+    @apply hover:shadow-elevated transform hover:scale-[1.02] transition-all duration-200;
+  }
+  
+  .game-card-elevated {
+    @apply bg-surface rounded-3xl p-6;
+    box-shadow: var(--shadow-game);
+    @apply transform hover:scale-[1.02] transition-all duration-200;
+  }
+  
+  /* Mobile-First Responsive */
+  .mobile-container {
+    @apply max-w-sm mx-auto px-4 py-6;
+    min-height: 100vh;
+  }
+  
+  .mobile-section {
+    @apply mb-8 last:mb-0;
+  }
+  
+  /* Animations */
+  .animate-bounce-soft {
+    animation: var(--animation-bounce);
+  }
+  
+  .animate-spin-slow {
+    animation: var(--animation-spin);
+  }
+  
+  .animate-pulse-glow {
+    animation: var(--animation-pulse);
+  }
+  
+  @keyframes celebration {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.1) rotate(-5deg); }
+    75% { transform: scale(1.1) rotate(5deg); }
+  }
+  
+  .animate-celebration {
+    animation: celebration 0.6s ease-in-out;
+  }
+  
+  @keyframes wheel-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(1440deg); }
+  }
+  
+  .animate-wheel-spin {
+    animation: wheel-spin 3s cubic-bezier(0.25, 0.1, 0.25, 1);
   }
 }
