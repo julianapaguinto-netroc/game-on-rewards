@@ -40,17 +40,22 @@ const SpinWheel = () => {
     const randomIndex = Math.floor(Math.random() * wheelSegments.length);
     const landedSegment = wheelSegments[randomIndex];
 
-    // Calculate precise rotation for arrow alignment
+    // Calculate precise rotation for perfect arrow alignment
     const segmentAngle = 360 / wheelSegments.length;
-    // Arrow points to top (0 degrees), adjust for segment center alignment
+    // Since wheel starts at 0° and arrow points up, calculate target position
+    // Each segment center is at: segmentIndex * segmentAngle + (segmentAngle / 2)
     const segmentCenter = randomIndex * segmentAngle + (segmentAngle / 2);
-    const targetAngle = 360 - segmentCenter; // Reverse because wheel rotates clockwise
-    const spins = 6 + Math.random() * 4; // 6-10 full rotations for more suspense
+    // We want the wheel to rotate so this segment center aligns with the top (0°)
+    // Since we rotate clockwise, we need to subtract from 360°
+    const targetAngle = (360 - segmentCenter) % 360;
+    
+    // Add multiple full rotations for suspense (8-12 full spins)
+    const spins = 8 + Math.random() * 4;
     const totalRotation = rotation + (spins * 360) + targetAngle;
     
     setRotation(totalRotation);
 
-    // Enhanced animation duration with realistic physics
+    // Use realistic physics timing - slow deceleration
     setTimeout(() => {
       setIsSpinning(false);
       setResult(landedSegment);
@@ -68,7 +73,7 @@ const SpinWheel = () => {
       if (!landedSegment.isSpecial) {
         completeChallenge('spin-wheel');
       }
-    }, 5000); // Increased to 5 seconds for better suspense
+    }, 6000); // 6 seconds for maximum suspense
   };
 
   const handleFinish = () => {
@@ -104,12 +109,12 @@ const SpinWheel = () => {
             {/* Wheel */}
             <div className="relative w-80 h-80 mx-auto mb-8">
               <svg
-                className={`w-full h-full transition-transform duration-[5000ms] ${
+                className={`w-full h-full transition-transform duration-[6000ms] ${
                   isSpinning ? 'drop-shadow-2xl' : 'drop-shadow-lg'
                 }`}
                 style={{ 
                   transform: `rotate(${rotation}deg)`,
-                  transitionTimingFunction: isSpinning ? 'cubic-bezier(0.23, 1, 0.320, 1)' : 'ease-out',
+                  transitionTimingFunction: isSpinning ? 'cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'ease-out',
                 }}
                 viewBox="0 0 200 200"
               >

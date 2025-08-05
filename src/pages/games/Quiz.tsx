@@ -151,6 +151,13 @@ const Quiz = () => {
           
           <h1 className="text-xl font-semibold">🧠 Quiz Challenge</h1>
         </div>
+        
+        {/* Show possible points */}
+        <div className="text-center mb-4">
+          <p className="text-sm text-foreground-muted">
+            Perfect Score: <span className="font-semibold text-brand-primary">{questions.reduce((sum, q) => sum + q.points, 0)} points</span>
+          </p>
+        </div>
       </div>
 
       {/* Progress */}
