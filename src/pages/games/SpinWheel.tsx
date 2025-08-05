@@ -36,19 +36,21 @@ const SpinWheel = () => {
     setIsSpinning(true);
     setResult(null);
 
-    // Random spin amount (3-5 full rotations + random position)
-    const spins = 3 + Math.random() * 2;
-    const randomDegree = Math.random() * 360;
-    const totalRotation = rotation + (spins * 360) + randomDegree;
+    // Generate random result first
+    const randomIndex = Math.floor(Math.random() * wheelSegments.length);
+    const landedSegment = wheelSegments[randomIndex];
+
+    // Calculate precise rotation for arrow alignment
+    const segmentAngle = 360 / wheelSegments.length;
+    // Arrow points to top (0 degrees), adjust for segment center alignment
+    const segmentCenter = randomIndex * segmentAngle + (segmentAngle / 2);
+    const targetAngle = 360 - segmentCenter; // Reverse because wheel rotates clockwise
+    const spins = 6 + Math.random() * 4; // 6-10 full rotations for more suspense
+    const totalRotation = rotation + (spins * 360) + targetAngle;
     
     setRotation(totalRotation);
 
-    // Calculate which segment we landed on
-    const segmentAngle = 360 / wheelSegments.length;
-    const normalizedAngle = (360 - (totalRotation % 360)) % 360;
-    const segmentIndex = Math.floor(normalizedAngle / segmentAngle);
-    const landedSegment = wheelSegments[segmentIndex];
-
+    // Enhanced animation duration with realistic physics
     setTimeout(() => {
       setIsSpinning(false);
       setResult(landedSegment);
@@ -66,7 +68,7 @@ const SpinWheel = () => {
       if (!landedSegment.isSpecial) {
         completeChallenge('spin-wheel');
       }
-    }, 3000);
+    }, 5000); // Increased to 5 seconds for better suspense
   };
 
   const handleFinish = () => {
@@ -93,16 +95,22 @@ const SpinWheel = () => {
       <div className="mobile-section">
         <Card className="game-card-elevated">
           <div className="relative flex flex-col items-center">
-            {/* Arrow Pointer */}
-            <div className="absolute top-0 z-10 transform -translate-y-2">
-              <div className="w-0 h-0 border-l-[15px] border-r-[15px] border-t-[25px] border-l-transparent border-r-transparent border-t-brand-primary drop-shadow-lg"></div>
+            {/* Enhanced Arrow Pointer */}
+            <div className="absolute top-0 z-10 transform -translate-y-1 flex flex-col items-center">
+              <div className="w-0 h-0 border-l-[18px] border-r-[18px] border-t-[30px] border-l-transparent border-r-transparent border-t-white drop-shadow-xl"></div>
+              <div className="w-2 h-6 bg-white rounded-b-full drop-shadow-lg -mt-1"></div>
             </div>
             
             {/* Wheel */}
             <div className="relative w-80 h-80 mx-auto mb-8">
               <svg
-                className="w-full h-full drop-shadow-lg transition-transform duration-[3000ms] ease-out"
-                style={{ transform: `rotate(${rotation}deg)` }}
+                className={`w-full h-full transition-transform duration-[5000ms] ${
+                  isSpinning ? 'drop-shadow-2xl' : 'drop-shadow-lg'
+                }`}
+                style={{ 
+                  transform: `rotate(${rotation}deg)`,
+                  transitionTimingFunction: isSpinning ? 'cubic-bezier(0.23, 1, 0.320, 1)' : 'ease-out',
+                }}
                 viewBox="0 0 200 200"
               >
                 {wheelSegments.map((segment, index) => {

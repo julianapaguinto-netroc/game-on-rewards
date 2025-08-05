@@ -79,15 +79,20 @@ const Quiz = () => {
 
   const finishQuiz = () => {
     setIsQuizComplete(true);
-    addPoints(totalPoints);
+    // Only add points that were earned from correct answers
+    if (totalPoints > 0) {
+      addPoints(totalPoints);
+    }
     completeChallenge('quiz');
     
     if (score === questions.length) {
-      toast.success("Perfect score! Amazing! 🏆");
+      toast.success(`Perfect score! +${totalPoints} points! 🏆`);
     } else if (score >= questions.length / 2) {
-      toast.success("Great job! Well done! 👏");
+      toast.success(`Great job! +${totalPoints} points! 👏`);
+    } else if (totalPoints > 0) {
+      toast.success(`Good effort! +${totalPoints} points! 📚`);
     } else {
-      toast.info("Good effort! Keep learning! 📚");
+      toast.info("Better luck next time! Keep learning! 📚");
     }
   };
 
