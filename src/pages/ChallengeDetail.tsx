@@ -37,7 +37,18 @@ const ChallengeDetail = () => {
     'slot-machine': '/game/slot-machine',
   };
 
-  const possibleRewards = [
+  // Quiz specific questions for calculating total points
+  const quizQuestions = [
+    { points: 200 },
+    { points: 300 },
+    { points: 250 },
+  ];
+
+  const possibleRewards = challenge.type === 'quiz' ? [
+    { reward: `Perfect Score: ${quizQuestions.reduce((sum, q) => sum + q.points, 0)} Points`, icon: "🏆", type: "points" },
+    { reward: "Partial Points Based on Correct Answers", icon: "💎", type: "points" },
+    { reward: "0 Points if No Correct Answers", icon: "😔", type: "nothing" },
+  ] : [
     { reward: "100 Points", icon: "💎", type: "points" },
     { reward: "500 Points", icon: "💰", type: "points" },
     { reward: "1000 Points", icon: "🏆", type: "points" },

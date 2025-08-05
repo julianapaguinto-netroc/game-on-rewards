@@ -40,40 +40,43 @@ const SpinWheel = () => {
     const randomIndex = Math.floor(Math.random() * wheelSegments.length);
     const landedSegment = wheelSegments[randomIndex];
 
-    // Calculate precise rotation for perfect arrow alignment
-    const segmentAngle = 360 / wheelSegments.length;
-    // Since wheel starts at 0° and arrow points up, calculate target position
-    // Each segment center is at: segmentIndex * segmentAngle + (segmentAngle / 2)
-    const segmentCenter = randomIndex * segmentAngle + (segmentAngle / 2);
-    // We want the wheel to rotate so this segment center aligns with the top (0°)
-    // Since we rotate clockwise, we need to subtract from 360°
-    const targetAngle = (360 - segmentCenter) % 360;
-    
-    // Add multiple full rotations for suspense (8-12 full spins)
-    const spins = 8 + Math.random() * 4;
-    const totalRotation = rotation + (spins * 360) + targetAngle;
-    
-    setRotation(totalRotation);
+    // Fast spin phase (3 seconds)
+    const fastSpins = 6 + Math.random() * 2; // 6-8 fast rotations
+    const fastRotation = rotation + (fastSpins * 360);
+    setRotation(fastRotation);
 
-    // Use realistic physics timing - slow deceleration
+    // After fast spin, start slow precise landing
     setTimeout(() => {
-      setIsSpinning(false);
-      setResult(landedSegment);
+      // Calculate precise rotation for perfect arrow alignment
+      const segmentAngle = 360 / wheelSegments.length;
+      const segmentCenter = randomIndex * segmentAngle + (segmentAngle / 2);
+      const targetAngle = (360 - segmentCenter) % 360;
       
-      if (landedSegment.points > 0) {
-        addPoints(landedSegment.points);
-        toast.success(`You won ${landedSegment.points} points! 🎉`);
-      } else if (landedSegment.isSpecial) {
-        toast.success("Spin Again! You get another chance! 🎯");
-        resetChallenge('spin-wheel');
-      } else {
-        toast.info("Better luck next time! 😔");
-      }
-      
-      if (!landedSegment.isSpecial) {
-        completeChallenge('spin-wheel');
-      }
-    }, 6000); // 6 seconds for maximum suspense
+      // Add 2 more slow rotations for final landing
+      const finalRotation = fastRotation + (2 * 360) + targetAngle;
+      setRotation(finalRotation);
+
+      // Show result after slow landing animation
+      setTimeout(() => {
+        setIsSpinning(false);
+        setResult(landedSegment);
+        
+        // Show exact reward in toast
+        toast.success(`🎯 ${landedSegment.text}`, {
+          description: landedSegment.points > 0 ? `You earned ${landedSegment.points} points!` : undefined
+        });
+
+        if (landedSegment.points > 0) {
+          addPoints(landedSegment.points);
+        } else if (landedSegment.isSpecial) {
+          resetChallenge('spin-wheel');
+        }
+        
+        if (!landedSegment.isSpecial) {
+          completeChallenge('spin-wheel');
+        }
+      }, 3000); // 3 seconds for slow landing
+    }, 3000); // 3 seconds for fast spin
   };
 
   const handleFinish = () => {
@@ -109,12 +112,13 @@ const SpinWheel = () => {
             {/* Wheel */}
             <div className="relative w-80 h-80 mx-auto mb-8">
               <svg
-                className={`w-full h-full transition-transform duration-[6000ms] ${
+                className={`w-full h-full transition-transform ${
                   isSpinning ? 'drop-shadow-2xl' : 'drop-shadow-lg'
                 }`}
                 style={{ 
                   transform: `rotate(${rotation}deg)`,
-                  transitionTimingFunction: isSpinning ? 'cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'ease-out',
+                  transitionDuration: '3s',
+                  transitionTimingFunction: isSpinning ? 'ease-out' : 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                 }}
                 viewBox="0 0 200 200"
               >
