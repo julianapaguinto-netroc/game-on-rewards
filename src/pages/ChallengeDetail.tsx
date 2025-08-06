@@ -14,7 +14,7 @@ const ChallengeDetail = () => {
     return (
       <div className="mobile-container bg-background min-h-screen">
         <div className="text-center mt-20">
-          <h1 className="text-xl font-semibold">Challenge not found</h1>
+          <h1 className="text-xl font-semibold">Game not found</h1>
           <Link to="/">
             <Button className="mt-4">Back to Home</Button>
           </Link>
@@ -23,7 +23,7 @@ const ChallengeDetail = () => {
     );
   }
 
-  const challengeIcons = {
+  const gameIcons = {
     'spin-wheel': '🎯',
     'scratch-card': '🎫',
     'quiz': '🧠',
@@ -75,11 +75,11 @@ const ChallengeDetail = () => {
         </div>
       </div>
 
-      {/* Challenge Details */}
+      {/* Game Details */}
       <div className="mobile-section">
         <Card className="game-card-elevated text-center">
           <div className="text-6xl mb-4">
-            {challengeIcons[challenge.type]}
+            {gameIcons[challenge.type]}
           </div>
           
           <h1 className="text-2xl font-bold mb-2">{challenge.name}</h1>
@@ -88,13 +88,13 @@ const ChallengeDetail = () => {
           {challenge.isCompleted ? (
             <div className="flex items-center justify-center gap-2 p-4 bg-game-success/10 rounded-xl mb-6">
               <Trophy className="w-5 h-5 text-game-success" />
-              <span className="font-semibold text-game-success">Challenge Completed!</span>
+              <span className="font-semibold text-game-success">Game Completed!</span>
             </div>
           ) : (
             <Link to={gameRoutes[challenge.type]}>
               <Button className="btn-game-primary w-full text-lg py-4">
                 <Zap className="w-5 h-5 mr-2" />
-                Play Challenge
+                Play Game
               </Button>
             </Link>
           )}
@@ -128,7 +128,7 @@ const ChallengeDetail = () => {
         <Card className="game-card">
           <h3 className="font-semibold mb-2">Rules</h3>
           <ul className="text-sm text-foreground-muted space-y-1">
-            <li>• Each challenge can only be played once</li>
+            <li>• Each game can only be played once</li>
             <li>• Points are added to your account immediately</li>
             <li>• "Spin Again" gives you another chance</li>
             <li>• Have fun and good luck! 🍀</li>

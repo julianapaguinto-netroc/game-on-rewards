@@ -1,23 +1,35 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface GameState {
+// Context for managing game state
+export interface GameState {
   points: number;
-  completedChallenges: string[];
   availableChallenges: Challenge[];
+  completedChallenges: Challenge[];
   products: Product[];
+  userRewards: UserReward[];
 }
 
-interface Challenge {
+export interface UserReward {
+  id: string;
+  type: 'discount' | 'points' | 'product';
+  title: string;
+  description: string;
+  company: string;
+  value: string;
+  isActive: boolean;
+  expiryDate: string;
+  dateReceived: string;
+}
+
+export interface Challenge {
   id: string;
   name: string;
   description: string;
   type: 'spin-wheel' | 'scratch-card' | 'quiz' | 'slot-machine';
   isCompleted: boolean;
-  maxPlays: number;
-  currentPlays: number;
 }
 
-interface Product {
+export interface Product {
   id: string;
   name: string;
   brand: string;
@@ -27,14 +39,18 @@ interface Product {
   category: string;
 }
 
-interface GameContextType {
+export interface GameContextType {
   gameState: GameState;
-  addPoints: (points: number) => void;
-  completeChallenge: (challengeId: string) => void;
-  redeemProduct: (productId: string) => boolean;
+  addPoints: (amount: number) => void;
+  completeChallenge: (challengeId: string, reward?: UserReward) => void;
+  redeemProduct: (productId: string) => void;
   resetChallenge: (challengeId: string) => void;
+  addUserReward: (reward: UserReward) => void;
 }
 
+const GameContext = createContext<GameContextType | undefined>(undefined);
+
+// Default challenge data
 const defaultChallenges: Challenge[] = [
   {
     id: 'spin-wheel',
@@ -42,8 +58,6 @@ const defaultChallenges: Challenge[] = [
     description: 'Spin the wheel and win exciting rewards!',
     type: 'spin-wheel',
     isCompleted: false,
-    maxPlays: 1,
-    currentPlays: 0,
   },
   {
     id: 'scratch-card',
@@ -51,8 +65,6 @@ const defaultChallenges: Challenge[] = [
     description: 'Scratch to reveal your prize!',
     type: 'scratch-card',
     isCompleted: false,
-    maxPlays: 1,
-    currentPlays: 0,
   },
   {
     id: 'quiz',
@@ -60,8 +72,6 @@ const defaultChallenges: Challenge[] = [
     description: 'Test your knowledge and earn points!',
     type: 'quiz',
     isCompleted: false,
-    maxPlays: 1,
-    currentPlays: 0,
   },
   {
     id: 'slot-machine',
@@ -69,92 +79,124 @@ const defaultChallenges: Challenge[] = [
     description: 'Pull the lever and match the symbols!',
     type: 'slot-machine',
     isCompleted: false,
-    maxPlays: 1,
-    currentPlays: 0,
   },
 ];
 
+// Default product data
 const defaultProducts: Product[] = [
   {
     id: '1',
-    name: '20% Off Coffee',
-    brand: 'Coffee Shop',
-    description: 'Get 20% off your next coffee purchase at any participating coffee shop.',
+    name: 'Premium Shampoo',
+    brand: 'Beauty Co',
+    description: 'Luxurious shampoo for healthy hair',
     cost: 500,
+    image: '/placeholder.svg',
+    category: 'Beauty',
+  },
+  {
+    id: '2',
+    name: 'Smartphone Case',
+    brand: 'Tech Plus',
+    description: 'Protective case for your smartphone',
+    cost: 750,
+    image: '/placeholder.svg',
+    category: 'Electronics',
+  },
+  {
+    id: '3',
+    name: '$25 Gift Voucher',
+    brand: 'Shopping Mall',
+    description: '$25 gift voucher for any store',
+    cost: 1000,
+    image: '/placeholder.svg',
+    category: 'Shopping',
+  },
+  {
+    id: '4',
+    name: 'Coffee Subscription',
+    brand: 'Bean & Brew',
+    description: 'One month premium coffee subscription',
+    cost: 1200,
     image: '/placeholder.svg',
     category: 'Food & Drink',
   },
   {
-    id: '2',
-    name: 'Free Movie Ticket',
-    brand: 'Cinema Plus',
-    description: 'Enjoy a free movie ticket for any regular screening.',
-    cost: 1000,
+    id: '5',
+    name: 'Fitness Tracker',
+    brand: 'FitLife',
+    description: 'Track your daily activities and health',
+    cost: 2000,
     image: '/placeholder.svg',
-    category: 'Entertainment',
-  },
-  {
-    id: '3',
-    name: '$10 Gift Card',
-    brand: 'Shopping Mall',
-    description: '$10 gift card valid at any store in the shopping mall.',
-    cost: 1500,
-    image: '/placeholder.svg',
-    category: 'Shopping',
-  },
+    category: 'Health & Fitness',
+  }
 ];
-
-const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [gameState, setGameState] = useState<GameState>({
-    points: 250, // Starting points for demo
-    completedChallenges: [],
+    points: 2500,
     availableChallenges: defaultChallenges,
+    completedChallenges: [],
     products: defaultProducts,
+    userRewards: [],
   });
 
-  const addPoints = (points: number) => {
+  const addPoints = (amount: number) => {
     setGameState(prev => ({
       ...prev,
-      points: prev.points + points,
+      points: prev.points + amount,
     }));
   };
 
-  const completeChallenge = (challengeId: string) => {
-    setGameState(prev => ({
-      ...prev,
-      availableChallenges: prev.availableChallenges.map(challenge =>
-        challenge.id === challengeId
-          ? { ...challenge, isCompleted: true, currentPlays: challenge.currentPlays + 1 }
-          : challenge
-      ),
-    }));
+  const completeChallenge = (challengeId: string, reward?: UserReward) => {
+    setGameState(prev => {
+      const challenge = prev.availableChallenges.find(c => c.id === challengeId);
+      if (!challenge || challenge.isCompleted) return prev;
+
+      const updatedChallenge = { ...challenge, isCompleted: true };
+      return {
+        ...prev,
+        availableChallenges: prev.availableChallenges.map(c => 
+          c.id === challengeId ? updatedChallenge : c
+        ),
+        completedChallenges: [...prev.completedChallenges, updatedChallenge],
+        userRewards: reward ? [...prev.userRewards, reward] : prev.userRewards
+      };
+    });
+  };
+
+  const redeemProduct = (productId: string) => {
+    setGameState(prev => {
+      const product = prev.products.find(p => p.id === productId);
+      if (!product || prev.points < product.cost) return prev;
+
+      return {
+        ...prev,
+        points: prev.points - product.cost,
+      };
+    });
   };
 
   const resetChallenge = (challengeId: string) => {
-    setGameState(prev => ({
-      ...prev,
-      availableChallenges: prev.availableChallenges.map(challenge =>
-        challenge.id === challengeId
-          ? { ...challenge, isCompleted: false, currentPlays: 0 }
-          : challenge
-      ),
-    }));
+    setGameState(prev => {
+      const challenge = prev.completedChallenges.find(c => c.id === challengeId);
+      if (!challenge) return prev;
+
+      const resetChallenge = { ...challenge, isCompleted: false };
+      return {
+        ...prev,
+        availableChallenges: prev.availableChallenges.map(c => 
+          c.id === challengeId ? resetChallenge : c
+        ),
+        completedChallenges: prev.completedChallenges.filter(c => c.id !== challengeId)
+      };
+    });
   };
 
-  const redeemProduct = (productId: string): boolean => {
-    const product = gameState.products.find(p => p.id === productId);
-    if (!product || gameState.points < product.cost) {
-      return false;
-    }
-
+  const addUserReward = (reward: UserReward) => {
     setGameState(prev => ({
       ...prev,
-      points: prev.points - product.cost,
+      userRewards: [...prev.userRewards, reward]
     }));
-
-    return true;
   };
 
   return (
@@ -164,6 +206,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       completeChallenge,
       redeemProduct,
       resetChallenge,
+      addUserReward,
     }}>
       {children}
     </GameContext.Provider>
@@ -178,4 +221,4 @@ export const useGame = () => {
   return context;
 };
 
-export type { Challenge, Product };
+// Types are already exported above
