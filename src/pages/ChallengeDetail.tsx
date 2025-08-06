@@ -54,6 +54,7 @@ const ChallengeDetail = () => {
     { reward: "1000 Points", icon: "🏆", type: "points" },
     { reward: "Spin Again", icon: "🔄", type: "bonus" },
     { reward: "Better luck next time", icon: "😔", type: "nothing" },
+    { reward: "20% Discount on Next Purchase", icon: "💸", type: "discount" },
   ];
 
   return (

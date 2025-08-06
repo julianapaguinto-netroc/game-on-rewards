@@ -1,4 +1,4 @@
-import { useGame } from "@/context/GameContext";
+import { useGame, UserReward } from "@/context/GameContext";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +36,6 @@ const MyRewards = () => {
               Back
             </Button>
           </Link>
-          
           <h1 className="text-xl font-bold">My Rewards</h1>
           <div></div>
         </div>
@@ -48,7 +47,7 @@ const MyRewards = () => {
           <Gift className="w-5 h-5 text-game-gold" />
           Active Rewards ({activeRewards.length})
         </h2>
-        
+
         {activeRewards.length === 0 ? (
           <Card className="game-card text-center py-8">
             <Gift className="w-12 h-12 mx-auto mb-4 text-foreground-muted" />
@@ -71,9 +70,8 @@ const MyRewards = () => {
                     <h3 className="font-semibold">{reward.title}</h3>
                     <p className="text-sm text-foreground-muted">{reward.company}</p>
                   </div>
-                  
                   <div className="flex flex-col items-end gap-2">
-                    <Badge 
+                    <Badge
                       variant={isExpiringSoon(reward.expiryDate) ? "destructive" : "secondary"}
                       className="text-xs"
                     >
@@ -81,31 +79,32 @@ const MyRewards = () => {
                     </Badge>
                   </div>
                 </div>
-                
+
                 <p className="text-sm mb-3">{reward.description}</p>
-                
+
                 <div className="flex items-center justify-between text-xs text-foreground-muted">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
                     <span>Expires: {new Date(reward.expiryDate).toLocaleDateString()}</span>
                   </div>
-                  
                   <div className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     <span>Received: {new Date(reward.dateReceived).toLocaleDateString()}</span>
                   </div>
                 </div>
-                
+
                 <div className="mt-4 pt-3 border-t border-border">
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-game-gold">{reward.value}</span>
-                    <Button 
-                      size="sm" 
-                      className="btn-game-primary"
-                      disabled={isExpired(reward.expiryDate)}
-                    >
-                      Redeem Now
-                    </Button>
+                    {reward.type !== "points" && (
+                      <Button
+                        size="sm"
+                        className="btn-game-primary"
+                        disabled={isExpired(reward.expiryDate)}
+                      >
+                        Redeem Now
+                      </Button>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -120,7 +119,7 @@ const MyRewards = () => {
           <h2 className="text-lg font-semibold mb-4 text-foreground-muted">
             Expired Rewards ({expiredRewards.length})
           </h2>
-          
+
           <div className="space-y-3">
             {expiredRewards.map((reward) => (
               <Card key={reward.id} className="game-card opacity-60">
@@ -129,12 +128,11 @@ const MyRewards = () => {
                     <h3 className="font-medium text-foreground-muted">{reward.title}</h3>
                     <p className="text-sm text-foreground-subtle">{reward.company}</p>
                   </div>
-                  
                   <Badge variant="outline" className="text-xs">
                     Expired
                   </Badge>
                 </div>
-                
+
                 <div className="flex items-center justify-between text-xs text-foreground-subtle">
                   <span>Value: {reward.value}</span>
                   <span>Expired: {new Date(reward.expiryDate).toLocaleDateString()}</span>

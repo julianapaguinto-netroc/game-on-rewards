@@ -1,10 +1,21 @@
+import { useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { companiesData } from "@/data/companies";
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, ChevronRightCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const CompanyCommanders = () => {
+  const scrollRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  const scroll = (id: string, direction: "left" | "right") => {
+  const container = scrollRefs.current[id];
+  if (container) {
+    container.scrollBy({ left: direction === "right" ? 200 : -200, behavior: "smooth" });
+  }
+};
+
+
   return (
     <div className="mobile-section">
       <div className="flex items-center justify-between mb-4">
@@ -16,7 +27,7 @@ const CompanyCommanders = () => {
           </Button>
         </Link>
       </div>
-      
+
       <div className="space-y-4">
         {companiesData.slice(0, 2).map((company) => (
           <Card key={company.id} className="game-card">
@@ -24,32 +35,54 @@ const CompanyCommanders = () => {
               <div className="text-2xl">{company.logo}</div>
               <h3 className="font-semibold text-lg">{company.name}</h3>
             </div>
-            
+
             <div className="space-y-2 mb-4">
               <p className="text-sm text-foreground-muted font-medium">Sub-Companies:</p>
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {company.subCompanies.map((subCompany) => (
-                  <Link
-                    key={subCompany.id}
-                    to={`/commander/${subCompany.id}`}
-                    className="flex-shrink-0"
-                  >
-                    <Card className="game-card border-l-4 border-l-primary hover:border-l-game-gold transition-colors min-w-[160px]">
-                      <div className="flex items-center gap-2 p-3">
-                        <div className="text-lg">{subCompany.logo}</div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-sm truncate">{subCompany.name}</h4>
-                          <p className="text-xs text-foreground-muted">
-                            {subCompany.products.length} products
-                          </p>
+              <div className="relative">
+                {/* Left Chevron */}
+                <button
+                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background shadow-md p-1 rounded-full"
+                  onClick={() => scroll(String(company.id), "left")}
+                >
+                  <ChevronLeft />
+                </button>
+
+                {/* Scrollable content */}
+                <div
+                  ref={(el) => (scrollRefs.current[company.id] = el)}
+                  className="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth px-6"
+                >
+                  {company.subCompanies.map((subCompany) => (
+                    <Link
+                      key={subCompany.id}
+                      to={`/commander/${subCompany.id}`}
+                      className="flex-shrink-0"
+                    >
+                      <Card className="game-card border-l-4 border-l-primary hover:border-l-game-gold transition-colors min-w-[160px]">
+                        <div className="flex items-center gap-2 p-3">
+                          <div className="text-lg">{subCompany.logo}</div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm truncate">{subCompany.name}</h4>
+                            <p className="text-xs text-foreground-muted">
+                              {subCompany.products.length} products
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  </Link>
-                ))}
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Right Chevron */}
+                <button
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background shadow-md p-1 rounded-full"
+                 onClick={() => scroll(String(company.id), "right")}
+                >
+                  <ChevronRight />
+                </button>
               </div>
             </div>
-            
+
             <Link to="/commanders">
               <Button variant="outline" size="sm" className="w-full">
                 View All {company.name} Companies

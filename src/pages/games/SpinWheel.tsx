@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useGame } from "@/context/GameContext";
+import { useGame, UserReward } from "@/context/GameContext";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Zap } from "lucide-react";
@@ -12,15 +12,70 @@ interface WheelSegment {
   points: number;
   color: string;
   isSpecial?: boolean;
+  rewardType?: "points" | "discount" | "offer" | "none";
+  rewardValue?: string;
 }
 
 const wheelSegments: WheelSegment[] = [
-  { id: 1, text: "100 pts", points: 100, color: "#e74c3c" },
-  { id: 2, text: "Spin Again", points: 0, color: "#3498db", isSpecial: true },
-  { id: 3, text: "500 pts", points: 500, color: "#f39c12" },
-  { id: 4, text: "Better luck", points: 0, color: "#95a5a6" },
-  { id: 5, text: "1000 pts", points: 1000, color: "#2ecc71" },
-  { id: 6, text: "250 pts", points: 250, color: "#9b59b6" },
+  {
+    id: 1,
+    text: "100 pts",
+    points: 100,
+    color: "#e74c3c",
+    rewardType: "points",
+  },
+  {
+    id: 2,
+    text: "Spin Again",
+    points: 0,
+    color: "#3498db",
+    isSpecial: true,
+    rewardType: "none",
+  },
+  {
+    id: 3,
+    text: "500 pts",
+    points: 500,
+    color: "#f39c12",
+    rewardType: "points",
+  },
+  {
+    id: 4,
+    text: "Better Luck Next Time",
+    points: 0,
+    color: "#95a5a6",
+    rewardType: "none",
+  },
+  {
+    id: 5,
+    text: "1000 pts",
+    points: 1000,
+    color: "#2ecc71",
+    rewardType: "points",
+  },
+  {
+    id: 6,
+    text: "250 pts",
+    points: 250,
+    color: "#9b59b6",
+    rewardType: "points",
+  },
+  {
+    id: 7,
+    text: "20% discount to Market A and B",
+    points: 0,
+    color: "#b65959",
+    rewardType: "discount",
+    rewardValue: "20%",
+  },
+  {
+    id: 8,
+    text: "50% discount to Market Lazada",
+    points: 0,
+    color: "#59abb6ff",
+    rewardType: "discount",
+    rewardValue: "50%",
+  },
 ];
 
 const SpinWheel = () => {
@@ -39,8 +94,8 @@ const SpinWheel = () => {
     const randomIndex = Math.floor(Math.random() * wheelSegments.length);
     const landedSegment = wheelSegments[randomIndex];
     const segmentAngle = 360 / wheelSegments.length;
+    const totalSpins = 7;
 
-    const totalSpins = 6;
     const targetAngle =
       360 * totalSpins +
       (360 - (randomIndex * segmentAngle + segmentAngle / 2));
@@ -63,21 +118,60 @@ const SpinWheel = () => {
         setRotation(rotation + targetAngle);
         setResult(landedSegment);
 
-        toast.success(`🎯 ${landedSegment.text}`, {
-          description:
-            landedSegment.points > 0
-              ? `You earned ${landedSegment.points} points!`
-              : undefined,
-        });
-
-        if (landedSegment.points > 0) {
+        let description = "";
+        if (landedSegment.rewardType === "points") {
+          description = `You earned ${landedSegment.points} points!`;
           addPoints(landedSegment.points);
+        } else if (landedSegment.rewardType === "discount") {
+          description = `You won a ${landedSegment.rewardValue} discount!`;
         } else if (landedSegment.isSpecial) {
           resetChallenge("spin-wheel");
         }
 
+        toast.success(`🎯 ${landedSegment.text}`, { description });
+
         if (!landedSegment.isSpecial) {
-          completeChallenge("spin-wheel");
+          if (
+            landedSegment.rewardType === "discount" &&
+            landedSegment.rewardValue
+          ) {
+            const reward: UserReward = {
+              id: crypto.randomUUID(),
+              type: "discount" as const,
+              title: `${landedSegment.rewardValue} Discount`,
+              description: `You earned a ${landedSegment.rewardValue} discount from the Spin Wheel!`,
+              company: "Spin Rewards",
+              value: landedSegment.rewardValue,
+              isActive: true,
+              expiryDate: new Date(
+                Date.now() + 7 * 24 * 60 * 60 * 1000
+              ).toISOString(), // 7 days
+              dateReceived: new Date().toISOString(),
+              source: "spin-wheel",
+            };
+            completeChallenge("spin-wheel", reward);
+          } else if (
+            landedSegment.rewardType === "points" &&
+            landedSegment.points > 0
+          ) {
+            const reward: UserReward = {
+              id: crypto.randomUUID(),
+              type: "points" as const,
+              title: `${landedSegment.points} Points`,
+              description: `You earned ${landedSegment.points} points from the Spin Wheel!`,
+              company: "Spin Rewards",
+              value: `${landedSegment.points}`,
+              isActive: true,
+              expiryDate: new Date(
+                Date.now() + 7 * 24 * 60 * 60 * 1000
+              ).toISOString(), // 7 days
+              dateReceived: new Date().toISOString(),
+              source: "spin-wheel",
+            };
+            completeChallenge("spin-wheel", reward);
+          } else {
+            completeChallenge("spin-wheel");
+          }
         }
       }
     };
@@ -142,7 +236,7 @@ const SpinWheel = () => {
                     100 + 60 * Math.sin((textAngle * Math.PI) / 180);
 
                   return (
-                    <g key={segment.id}>
+                    <g key={`${index}-${segment.id}`}>
                       <path
                         d={`M 100 100 L ${x1} ${y1} A 90 90 0 0 1 ${x2} ${y2} Z`}
                         fill={segment.color}
@@ -157,7 +251,6 @@ const SpinWheel = () => {
                         fill="white"
                         fontSize="10"
                         fontWeight="bold"
-                        className="font-game"
                         transform={`rotate(${textAngle}, ${textX}, ${textY})`}
                       >
                         {segment.text}
@@ -176,7 +269,7 @@ const SpinWheel = () => {
               </svg>
             </div>
 
-            {/* Spin Button */}
+            {/* Spin Button or Result */}
             {!result ? (
               <Button
                 onClick={spinWheel}
@@ -198,15 +291,29 @@ const SpinWheel = () => {
             ) : (
               <div className="text-center space-y-4">
                 <div className="text-6xl">
-                  {result.isSpecial ? "🎯" : result.points > 0 ? "🎉" : "😔"}
+                  {result.isSpecial
+                    ? "🎯"
+                    : result.rewardType === "points"
+                    ? "🎉"
+                    : result.rewardType === "discount"
+                    ? "🏷️"
+                    : result.rewardType === "offer"
+                    ? "🎁"
+                    : "😔"}
                 </div>
+
                 <h2 className="text-2xl font-bold">
                   {result.isSpecial
                     ? "Spin Again!"
-                    : result.points > 0
+                    : result.rewardType === "points"
                     ? `You Won ${result.points} Points!`
+                    : result.rewardType === "discount"
+                    ? `You Won a ${result.rewardValue} Discount!`
+                    : result.rewardType === "offer"
+                    ? `You Won: ${result.rewardValue}`
                     : "Better Luck Next Time!"}
                 </h2>
+
                 {result.isSpecial ? (
                   <Button
                     onClick={() => {
@@ -218,9 +325,23 @@ const SpinWheel = () => {
                     Spin Again!
                   </Button>
                 ) : (
-                  <Button onClick={handleFinish} className="btn-game-success">
-                    Continue
-                  </Button>
+                  <div className="space-y-2">
+                    <Button
+                      onClick={handleFinish}
+                      className="btn-game-success w-full"
+                    >
+                      Continue
+                    </Button>
+
+                    {(result.rewardType === "discount" ||
+                      result.rewardType === "offer") && (
+                      <Link to="/my-rewards">
+                        <Button variant="outline" className="w-full mt-3">
+                          View My Rewards
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
                 )}
               </div>
             )}
@@ -234,7 +355,7 @@ const SpinWheel = () => {
           <ul className="text-sm text-foreground-muted space-y-1">
             <li>• Tap "Spin the Wheel" to start</li>
             <li>• Wait for the wheel to stop spinning</li>
-            <li>• Collect your points based on where it lands</li>
+            <li>• Collect your points or discounts</li>
             <li>• "Spin Again" gives you another chance!</li>
           </ul>
         </Card>
