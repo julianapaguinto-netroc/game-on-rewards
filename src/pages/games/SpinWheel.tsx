@@ -36,56 +36,61 @@ const SpinWheel = () => {
     setIsSpinning(true);
     setResult(null);
 
-    // Generate random result first
     const randomIndex = Math.floor(Math.random() * wheelSegments.length);
     const landedSegment = wheelSegments[randomIndex];
+    const segmentAngle = 360 / wheelSegments.length;
 
-    // Fast spin phase (3 seconds)
-    const fastSpins = 6 + Math.random() * 2; // 6-8 fast rotations
-    const fastRotation = rotation + (fastSpins * 360);
-    setRotation(fastRotation);
+    const totalSpins = 6;
+    const targetAngle =
+      360 * totalSpins +
+      (360 - (randomIndex * segmentAngle + segmentAngle / 2));
 
-    // After fast spin, start slow precise landing
-    setTimeout(() => {
-      // Calculate precise rotation for perfect arrow alignment
-      const segmentAngle = 360 / wheelSegments.length;
-      const segmentCenter = randomIndex * segmentAngle + (segmentAngle / 2);
-      const targetAngle = (360 - segmentCenter) % 360;
-      
-      // Add 2 more slow rotations for final landing
-      const finalRotation = fastRotation + (2 * 360) + targetAngle;
-      setRotation(finalRotation);
+    let start = performance.now();
+    const duration = 4000;
 
-      // Show result after slow landing animation
-      setTimeout(() => {
+    const animate = (timestamp: number) => {
+      const elapsed = timestamp - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+
+      const currentRotation = rotation + targetAngle * easedProgress;
+      setRotation(currentRotation);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
         setIsSpinning(false);
+        setRotation(rotation + targetAngle);
         setResult(landedSegment);
-        
-        // Show exact reward in toast
+
         toast.success(`🎯 ${landedSegment.text}`, {
-          description: landedSegment.points > 0 ? `You earned ${landedSegment.points} points!` : undefined
+          description:
+            landedSegment.points > 0
+              ? `You earned ${landedSegment.points} points!`
+              : undefined,
         });
 
         if (landedSegment.points > 0) {
           addPoints(landedSegment.points);
         } else if (landedSegment.isSpecial) {
-          resetChallenge('spin-wheel');
+          resetChallenge("spin-wheel");
         }
-        
+
         if (!landedSegment.isSpecial) {
-          completeChallenge('spin-wheel');
+          completeChallenge("spin-wheel");
         }
-      }, 3000); // 3 seconds for slow landing
-    }, 3000); // 3 seconds for fast spin
+      }
+    };
+
+    requestAnimationFrame(animate);
   };
 
   const handleFinish = () => {
-    navigate('/');
+    navigate("/");
   };
 
   return (
     <div className="mobile-container bg-background min-h-screen">
-      {/* Header */}
       <div className="mobile-section">
         <div className="flex items-center justify-between mb-6">
           <Link to="/challenge/spin-wheel">
@@ -94,46 +99,47 @@ const SpinWheel = () => {
               Back
             </Button>
           </Link>
-          
           <h1 className="text-xl font-semibold">🎯 Spin the Wheel</h1>
         </div>
       </div>
 
-      {/* Wheel Container */}
       <div className="mobile-section">
         <Card className="game-card-elevated">
           <div className="relative flex flex-col items-center">
-            {/* Enhanced Arrow Pointer */}
+            {/* Pointer */}
             <div className="absolute top-0 z-10 transform -translate-y-1 flex flex-col items-center">
               <div className="w-0 h-0 border-l-[18px] border-r-[18px] border-t-[30px] border-l-transparent border-r-transparent border-t-white drop-shadow-xl"></div>
               <div className="w-2 h-6 bg-white rounded-b-full drop-shadow-lg -mt-1"></div>
             </div>
-            
+
             {/* Wheel */}
             <div className="relative w-80 h-80 mx-auto mb-8">
               <svg
-                className={`w-full h-full transition-transform ${
-                  isSpinning ? 'drop-shadow-2xl' : 'drop-shadow-lg'
+                className={`w-full h-full ${
+                  isSpinning ? "drop-shadow-2xl" : "drop-shadow-lg"
                 }`}
-                style={{ 
-                  transform: `rotate(${rotation}deg)`,
-                  transitionDuration: '3s',
-                  transitionTimingFunction: isSpinning ? 'ease-out' : 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                style={{
+                  transform: `rotate(${rotation - 90}deg)`,
+                  transformOrigin: "center center",
+                  transition: isSpinning ? "none" : "transform 0.5s ease-out",
                 }}
                 viewBox="0 0 200 200"
               >
                 {wheelSegments.map((segment, index) => {
                   const angle = (360 / wheelSegments.length) * index;
-                  const nextAngle = (360 / wheelSegments.length) * (index + 1);
-                  
+                  const nextAngle = angle + 360 / wheelSegments.length;
+                  const segmentAngle = 360 / wheelSegments.length;
+
                   const x1 = 100 + 90 * Math.cos((angle * Math.PI) / 180);
                   const y1 = 100 + 90 * Math.sin((angle * Math.PI) / 180);
                   const x2 = 100 + 90 * Math.cos((nextAngle * Math.PI) / 180);
                   const y2 = 100 + 90 * Math.sin((nextAngle * Math.PI) / 180);
-                  
-                  const textAngle = angle + (360 / wheelSegments.length) / 2;
-                  const textX = 100 + 60 * Math.cos((textAngle * Math.PI) / 180);
-                  const textY = 100 + 60 * Math.sin((textAngle * Math.PI) / 180);
+
+                  const textAngle = angle + segmentAngle / 2;
+                  const textX =
+                    100 + 60 * Math.cos((textAngle * Math.PI) / 180);
+                  const textY =
+                    100 + 60 * Math.sin((textAngle * Math.PI) / 180);
 
                   return (
                     <g key={segment.id}>
@@ -159,8 +165,6 @@ const SpinWheel = () => {
                     </g>
                   );
                 })}
-                
-                {/* Center Circle */}
                 <circle
                   cx="100"
                   cy="100"
@@ -193,16 +197,16 @@ const SpinWheel = () => {
               </Button>
             ) : (
               <div className="text-center space-y-4">
-                <div className="text-6xl">{result.isSpecial ? "🎯" : result.points > 0 ? "🎉" : "😔"}</div>
+                <div className="text-6xl">
+                  {result.isSpecial ? "🎯" : result.points > 0 ? "🎉" : "😔"}
+                </div>
                 <h2 className="text-2xl font-bold">
-                  {result.isSpecial 
-                    ? "Spin Again!" 
-                    : result.points > 0 
-                      ? `You Won ${result.points} Points!` 
-                      : "Better Luck Next Time!"
-                  }
+                  {result.isSpecial
+                    ? "Spin Again!"
+                    : result.points > 0
+                    ? `You Won ${result.points} Points!`
+                    : "Better Luck Next Time!"}
                 </h2>
-                
                 {result.isSpecial ? (
                   <Button
                     onClick={() => {
@@ -224,7 +228,6 @@ const SpinWheel = () => {
         </Card>
       </div>
 
-      {/* Instructions */}
       <div className="mobile-section">
         <Card className="game-card">
           <h3 className="font-semibold mb-2">How to Play</h3>
