@@ -45,7 +45,7 @@ export interface GameContextType {
   gameState: GameState;
   addPoints: (amount: number) => void;
   completeChallenge: (challengeId: string, reward?: UserReward) => void;
-  redeemProduct: (productId: string) => void;
+  redeemProduct: (productId: string) => boolean;
   resetChallenge: (challengeId: string) => void;
   addUserReward: (reward: UserReward) => void;
   clearLastReceivedReward: () => void;
@@ -180,20 +180,35 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const redeemProduct = (productId: string): boolean => {
-    let redeemed = false;
+    const product = gameState.products.find((p) => p.id === productId);
+    if (!product || gameState.points < product.cost) {
+      return false;
+    }
 
-    setGameState((prev) => {
-      const product = prev.products.find((p) => p.id === productId);
-      if (!product || prev.points < product.cost) return prev;
+    setGameState((prev) => ({
+      ...prev,
+      points: prev.points - product.cost,
+      userRewards: [
+        ...prev.userRewards,
+        {
+          id: product.id + "-" + Date.now(),
+          type: "discount",
+          title: `${product.name} Voucher`,
+          description: `Redeemed ${product.cost.toLocaleString()} points for ${
+            product.name
+          }`,
+          company: product.brand,
+          value: product.cost.toString(),
+          isActive: true,
+          expiryDate: new Date(
+            Date.now() + 30 * 24 * 60 * 60 * 1000
+          ).toISOString(), // +30 days
+          dateReceived: new Date().toISOString(),
+        },
+      ],
+    }));
 
-      redeemed = true;
-      return {
-        ...prev,
-        points: prev.points - product.cost,
-      };
-    });
-
-    return redeemed;
+    return true;
   };
 
   const resetChallenge = (challengeId: string) => {

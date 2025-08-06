@@ -9,9 +9,9 @@ const ProductDetail = () => {
   const { gameState, redeemProduct } = useGame();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
-  const product = gameState.products.find(p => p.id === id);
-  
+
+  const product = gameState.products.find((p) => p.id === id);
+
   if (!product) {
     return (
       <div className="mobile-container bg-background min-h-screen">
@@ -24,11 +24,12 @@ const ProductDetail = () => {
       </div>
     );
   }
-
+  
   const handleRedeem = () => {
-    const success = redeemProduct(product.id);
+    const success = redeemProduct(product.id); // ✅ now returns boolean
+
     if (success) {
-      toast.success("Product redeemed successfully!");
+      toast.success("Offer redeemed successfully!");
       navigate(`/redemption-success/${product.id}`);
     } else {
       toast.error("Not enough points to redeem this product");
@@ -46,10 +47,12 @@ const ProductDetail = () => {
               Back
             </Button>
           </Link>
-          
+
           <div className="flex items-center gap-2">
             <Coins className="text-game-gold w-5 h-5" />
-            <span className="font-semibold">{gameState.points.toLocaleString()}</span>
+            <span className="font-semibold">
+              {gameState.points.toLocaleString()}
+            </span>
           </div>
         </div>
       </div>
@@ -61,7 +64,7 @@ const ProductDetail = () => {
             <div className="w-32 h-32 bg-background-secondary rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Gift className="w-16 h-16 text-brand-primary" />
             </div>
-            
+
             <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
             <p className="text-foreground-muted">{product.brand}</p>
           </div>
@@ -84,10 +87,11 @@ const ProductDetail = () => {
               disabled={gameState.points < product.cost}
               className="btn-game-primary w-full text-lg py-4"
             >
-              {gameState.points >= product.cost 
-                ? "Redeem Now" 
-                : `Need ${(product.cost - gameState.points).toLocaleString()} more points`
-              }
+              {gameState.points >= product.cost
+                ? "Redeem Now"
+                : `Need ${(
+                    product.cost - gameState.points
+                  ).toLocaleString()} more points`}
             </Button>
           </div>
         </Card>
