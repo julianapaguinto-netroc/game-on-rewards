@@ -81,17 +81,18 @@ const wheelSegments: WheelSegment[] = [
 // Helper functions for text handling
 const calculateFontSize = (text: string, lineCount: number): number => {
   const baseSize = 9;
-  const minSize = 5;
+  const minSize = 4;
   const maxSize = 11;
   
   // More aggressive sizing based on text length and line count
   if (lineCount > 1) {
-    return Math.max(minSize, baseSize - 2);
+    return Math.max(minSize, baseSize - 3);
   }
   
   if (text.length <= 6) return maxSize;
   if (text.length <= 10) return baseSize;
-  if (text.length <= 15) return baseSize - 1;
+  if (text.length <= 15) return baseSize - 2;
+  if (text.length <= 20) return baseSize - 3;
   return minSize;
 };
 
@@ -124,18 +125,13 @@ const breakTextIntoLines = (text: string): string[] => {
   
   if (currentLine) lines.push(currentLine);
   
-  // Limit to 3 lines maximum
-  if (lines.length > 3) {
-    return [lines[0], lines[1], "..."];
-  }
-  
   return lines;
 };
 
 const getTextRadius = (textLines: string[]): number => {
   if (textLines.length === 1) return 65;
   if (textLines.length === 2) return 58;
-  return 50; // 3 lines
+  return 50; // 3+ lines
 };
 
 const SpinWheel = () => {
