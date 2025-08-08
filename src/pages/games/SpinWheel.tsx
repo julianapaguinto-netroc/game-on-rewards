@@ -79,39 +79,63 @@ const wheelSegments: WheelSegment[] = [
 ];
 
 // Helper functions for text handling
-const calculateFontSize = (text: string): number => {
-  const baseSize = 10;
-  const minSize = 6;
-  const maxSize = 12;
+const calculateFontSize = (text: string, lineCount: number): number => {
+  const baseSize = 9;
+  const minSize = 5;
+  const maxSize = 11;
   
-  if (text.length <= 8) return maxSize;
-  if (text.length <= 12) return baseSize;
-  if (text.length <= 18) return 8;
+  // More aggressive sizing based on text length and line count
+  if (lineCount > 1) {
+    return Math.max(minSize, baseSize - 2);
+  }
+  
+  if (text.length <= 6) return maxSize;
+  if (text.length <= 10) return baseSize;
+  if (text.length <= 15) return baseSize - 1;
   return minSize;
 };
 
-const breakTextIntoLines = (text: string, maxCharsPerLine: number = 12): string[] => {
+const breakTextIntoLines = (text: string): string[] => {
+  // More aggressive line breaking for wheel segments
+  const maxCharsPerLine = 8;
+  
   if (text.length <= maxCharsPerLine) return [text];
   
-  const words = text.split(' ');
+  const words = text.split(" ");
   const lines: string[] = [];
-  let currentLine = '';
+  let currentLine = "";
   
   for (const word of words) {
-    if ((currentLine + ' ' + word).length <= maxCharsPerLine) {
-      currentLine = currentLine ? currentLine + ' ' + word : word;
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    
+    if (testLine.length <= maxCharsPerLine) {
+      currentLine = testLine;
     } else {
-      if (currentLine) lines.push(currentLine);
-      currentLine = word;
+      if (currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        // Word is too long, break it
+        lines.push(word.substring(0, maxCharsPerLine));
+        currentLine = word.substring(maxCharsPerLine);
+      }
     }
   }
   
   if (currentLine) lines.push(currentLine);
-  return lines.length > 2 ? [lines[0], lines.slice(1).join(' ')] : lines;
+  
+  // Limit to 3 lines maximum
+  if (lines.length > 3) {
+    return [lines[0], lines[1], "..."];
+  }
+  
+  return lines;
 };
 
 const getTextRadius = (textLines: string[]): number => {
-  return textLines.length > 1 ? 55 : 65;
+  if (textLines.length === 1) return 65;
+  if (textLines.length === 2) return 58;
+  return 50; // 3 lines
 };
 
 const SpinWheel = () => {
@@ -268,7 +292,7 @@ const SpinWheel = () => {
                   const textAngle = angle + segmentAngle / 2;
                   const textLines = breakTextIntoLines(segment.text);
                   const textRadius = getTextRadius(textLines);
-                  const fontSize = calculateFontSize(segment.text);
+                  const fontSize = calculateFontSize(segment.text, textLines.length);
                   
                   const textX = 100 + textRadius * Math.cos((textAngle * Math.PI) / 180);
                   const textY = 100 + textRadius * Math.sin((textAngle * Math.PI) / 180);
