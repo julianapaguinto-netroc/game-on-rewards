@@ -152,9 +152,13 @@ const SpinWheel = () => {
     const segmentAngle = 360 / wheelSegments.length;
     const totalSpins = 7;
 
-    const targetAngle =
-      360 * totalSpins +
-      (360 - (randomIndex * segmentAngle + segmentAngle / 2));
+    // Calculate the target angle to align the selected segment with the arrow
+    // The arrow points up (top), so we need to rotate so the selected segment is at the top
+    const targetSegmentAngle = randomIndex * segmentAngle + segmentAngle / 2;
+    const targetAngle = 360 * totalSpins + (360 - targetSegmentAngle);
+    
+    // Store the starting rotation for this spin
+    const startRotation = rotation;
 
     let start = performance.now();
     const duration = 4000;
@@ -164,14 +168,15 @@ const SpinWheel = () => {
       const progress = Math.min(elapsed / duration, 1);
       const easedProgress = 1 - Math.pow(1 - progress, 3); // easeOutCubic
 
-      const currentRotation = rotation + targetAngle * easedProgress;
+      const currentRotation = startRotation + targetAngle * easedProgress;
       setRotation(currentRotation);
 
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
         setIsSpinning(false);
-        setRotation(rotation + targetAngle);
+        const finalRotation = startRotation + targetAngle;
+        setRotation(finalRotation);
         setResult(landedSegment);
 
         let description = "";
