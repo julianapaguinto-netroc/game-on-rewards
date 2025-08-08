@@ -62,7 +62,7 @@ const wheelSegments: WheelSegment[] = [
   },
   {
     id: 7,
-    text: "20% discount to Market A and B",
+    text: "20% Off Market A&B",
     points: 0,
     color: "#b65959",
     rewardType: "discount",
@@ -70,13 +70,49 @@ const wheelSegments: WheelSegment[] = [
   },
   {
     id: 8,
-    text: "50% discount to Market Lazada",
+    text: "50% Off Lazada",
     points: 0,
     color: "#59abb6ff",
     rewardType: "discount",
     rewardValue: "50%",
   },
 ];
+
+// Helper functions for text handling
+const calculateFontSize = (text: string): number => {
+  const baseSize = 10;
+  const minSize = 6;
+  const maxSize = 12;
+  
+  if (text.length <= 8) return maxSize;
+  if (text.length <= 12) return baseSize;
+  if (text.length <= 18) return 8;
+  return minSize;
+};
+
+const breakTextIntoLines = (text: string, maxCharsPerLine: number = 12): string[] => {
+  if (text.length <= maxCharsPerLine) return [text];
+  
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let currentLine = '';
+  
+  for (const word of words) {
+    if ((currentLine + ' ' + word).length <= maxCharsPerLine) {
+      currentLine = currentLine ? currentLine + ' ' + word : word;
+    } else {
+      if (currentLine) lines.push(currentLine);
+      currentLine = word;
+    }
+  }
+  
+  if (currentLine) lines.push(currentLine);
+  return lines.length > 2 ? [lines[0], lines.slice(1).join(' ')] : lines;
+};
+
+const getTextRadius = (textLines: string[]): number => {
+  return textLines.length > 1 ? 55 : 65;
+};
 
 const SpinWheel = () => {
   const { addPoints, completeChallenge, resetChallenge } = useGame();
@@ -230,10 +266,12 @@ const SpinWheel = () => {
                   const y2 = 100 + 90 * Math.sin((nextAngle * Math.PI) / 180);
 
                   const textAngle = angle + segmentAngle / 2;
-                  const textX =
-                    100 + 60 * Math.cos((textAngle * Math.PI) / 180);
-                  const textY =
-                    100 + 60 * Math.sin((textAngle * Math.PI) / 180);
+                  const textLines = breakTextIntoLines(segment.text);
+                  const textRadius = getTextRadius(textLines);
+                  const fontSize = calculateFontSize(segment.text);
+                  
+                  const textX = 100 + textRadius * Math.cos((textAngle * Math.PI) / 180);
+                  const textY = 100 + textRadius * Math.sin((textAngle * Math.PI) / 180);
 
                   return (
                     <g key={`${index}-${segment.id}`}>
@@ -243,18 +281,28 @@ const SpinWheel = () => {
                         stroke="#fff"
                         strokeWidth="2"
                       />
-                      <text
-                        x={textX}
-                        y={textY}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        fill="white"
-                        fontSize="10"
-                        fontWeight="bold"
-                        transform={`rotate(${textAngle}, ${textX}, ${textY})`}
-                      >
-                        {segment.text}
-                      </text>
+                      <g transform={`rotate(${textAngle}, ${textX}, ${textY})`}>
+                        {textLines.map((line, lineIndex) => (
+                          <text
+                            key={lineIndex}
+                            x={textX}
+                            y={textY + (lineIndex - (textLines.length - 1) / 2) * (fontSize + 2)}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            fill="white"
+                            fontSize={fontSize}
+                            fontWeight="bold"
+                            style={{
+                              textShadow: "1px 1px 2px rgba(0,0,0,0.8)",
+                              paintOrder: "stroke fill",
+                              stroke: "rgba(0,0,0,0.5)",
+                              strokeWidth: "0.5px"
+                            }}
+                          >
+                            {line}
+                          </text>
+                        ))}
+                      </g>
                     </g>
                   );
                 })}
