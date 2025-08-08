@@ -13,7 +13,7 @@ export default function Layout({ children }: LayoutProps) {
           <SidebarTrigger className="ml-2">
             <Menu className="h-4 w-4" />
           </SidebarTrigger>
-          <h1 className="ml-4 font-semibold">GameApp</h1>
+          <h1 className="ml-4 font-semibold">Marketplace</h1>
         </header>
 
         <div className="flex min-h-screen w-full pt-12">

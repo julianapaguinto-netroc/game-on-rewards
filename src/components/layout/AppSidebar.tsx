@@ -17,9 +17,7 @@ import {
 
 const menuItems = [
   { title: "Home", url: "/", icon: Home },
-  { title: "Gamification", url: "/", icon: Gamepad2 },
-  { title: "My Rewards", url: "/my-rewards", icon: Gift },
-  { title: "Catalogue", url: "/catalogue", icon: Trophy },
+  { title: "My Rewards", url: "/",icon: Gift  },
   { title: "Settings", url: "/settings", icon: Settings },
 ]
 
